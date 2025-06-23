@@ -156,7 +156,7 @@
             <h2>Aprendizado por Self-Play</h2>
             <div class="bg-gray-800 p-8 rounded-lg border border-gray-700 max-w-3xl mx-auto text-center">
                 <h3 class="text-2xl font-semibold mb-3 text-blue-300">Jogar Contra Si Mesmo</h3>
-                <p class="text-xl">O ponto de partida é o mais básico: a rede neural joga milhares de partidas contra si mesma, começando com jogadas aleatórias.</p>
+                <p class="text-xl">O ponto de partida é o mais básico: o algoritmo joga milhares de partidas contra si mesmo, começando com jogadas aleatórias.</p>
                 <p class="mt-4 text-xl text-gray-400">Não há dados de jogos humanos ou livros de abertura. O conhecimento é gerado a partir da própria experiência.</p>
             </div>
         </div>
@@ -169,107 +169,128 @@
             <div class="flex flex-col md:flex-row gap-8 text-left text-lg">
                 <div class="flex-1 bg-gray-800 p-6 rounded-lg border border-gray-700">
                     <h3 class="text-2xl font-semibold mb-3 text-blue-300">1. Rede Neural Profunda (DNN)</h3>
-                    <p class="mb-2"><code class="bg-gray-700 p-1 rounded-md text-white">(p, v) = fθ(s)</code></p>
+                    <p class="mb-2"><code class="bg-gray-700 p-1 rounded-md text-white">(p, v) = f<sub>θ</sub>(s)</code></p>
                     <p><strong class="font-semibold text-white">Entrada (s):</strong> Posição do tabuleiro.</p>
                     <p><strong class="font-semibold text-white">Saídas:</strong> Vetor de Probabilidades (p) e Valor Escalar (v).</p>
                     <p class="mt-2 text-gray-400">A rede neural funciona como o "cérebro" do AlphaZero.</p>
                 </div>
                 <div class="flex-1 bg-gray-800 p-6 rounded-lg border border-gray-700">
                     <h3 class="text-2xl font-semibold mb-3 text-blue-300">2. Busca em Árvore de Monte Carlo (MCTS)</h3>
-                    <p>Um algoritmo de busca de propósito geral, guiado pela rede neural para explorar as jogadas mais promissoras.</p>
+                    <p>Usa um algoritmo de busca de propósito geral, guiado pela rede neural para explorar as jogadas mais promissoras.</p>
                     <p class="mt-4 text-gray-400">Vamos ver como funciona em detalhe...</p>
                 </div>
             </div>
         </div>
     </section>
+    
 
-    <!-- Slide 5: Aprofundando no MCTS -->
+
+    <!-- Slide 5: A busca MCTS (Introdução) -->
     <section class="slide">
         <div class="slide-content">
-            <h2>A busca MCTS</h2>
+            <h2>A Busca MCTS: Visão Geral</h2>
+            <p class="text-xl max-w-3xl mx-auto mb-8">Para "pensar", o AlphaZero simula milhares de jogos futuros a partir da posição atual, seguindo um ciclo de 4 etapas.</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-2xl font-semibold">
+                <div class="bg-gray-800 p-6 rounded-lg border-2 border-yellow-400">1. Seleção</div>
+                <div class="bg-gray-800 p-6 rounded-lg border-2 border-green-400">2. Expansão</div>
+                <div class="bg-gray-800 p-6 rounded-lg border-2 border-blue-400">3. Avaliação</div>
+                <div class="bg-gray-800 p-6 rounded-lg border-2 border-purple-400">4. Retropropagação</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 6: MCTS - Etapa 1 -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Etapa 1: Seleção</h2>
             <div class="flex flex-col lg:flex-row gap-8 items-center text-left">
-                <!-- Coluna Esquerda: Diagrama -->
                 <div class="flex-1">
-                     <!-- SVG redesenhado para melhor apelo visual -->
-                    <svg width="100%" viewBox="0 0 800 650" xmlns="http://www.w3.org/2000/svg" class="w-full max-w-2xl mx-auto">
-                        <defs>
-                            <linearGradient id="grad-root" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#2563eb;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#60a5fa;stop-opacity:1" />
-                            </linearGradient>
-                             <linearGradient id="grad-selected" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#fcd34d;stop-opacity:1" />
-                            </linearGradient>
-                             <linearGradient id="grad-expand" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" style="stop-color:#10b981;stop-opacity:1" />
-                                <stop offset="100%" style="stop-color:#6ee7b7;stop-opacity:1" />
-                            </linearGradient>
-                            <marker id="arrow-selection" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"></path></marker>
-                            <marker id="arrow-expansion" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#10b981"></path></marker>
-                            <marker id="arrow-backprop" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#a78bfa"></path></marker>
-                             <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
-                                <feDropShadow dx="3" dy="3" stdDeviation="3" flood-color="#000000" flood-opacity="0.3"/>
-                            </filter>
-                        </defs>
-                        <style>
-                            .node-text { font-family: 'Poppins', sans-serif; font-size: 20px; text-anchor: middle; fill: white; font-weight: 600; }
-                            .sub-text { font-family: 'Lato', sans-serif; font-size: 16px; text-anchor: middle; fill: white; }
-                            .edge { stroke-width: 3; filter: url(#shadow); }
-                            .node-circle { filter: url(#shadow); }
-                             .step-label { font-family: 'Poppins', sans-serif; font-size: 28px; font-weight: 600; text-anchor: start; }
-                        </style>
-                        
-                        <!-- Etapas -->
-                        <text x="50" y="50" class="step-label" fill="#f59e0b">1. SELEÇÃO</text>
-                        <text x="50" y="200" class="step-label" fill="#10b981">2. EXPANSÃO</text>
-                        <text x="50" y="350" class="step-label" fill="#3b82f6">3. AVALIAÇÃO</text>
-                        <text x="50" y="500" class="step-label" fill="#a78bfa">4. RETROPROPAGAÇÃO</text>
-
-                        <!-- Diagrama -->
-                        <g transform="translate(450, 0)">
-                            <!-- NÓS -->
-                            <circle cx="175" cy="80" r="40" class="node-circle" fill="url(#grad-root)"></circle>
-                            <text x="175" y="80" class="node-text">Raiz</text>
-                            
-                            <circle cx="50" cy="230" r="35" class="node-circle" fill="#4b5563"></circle> <text x="50" y="235" class="sub-text">0/1</text>
-                            <circle cx="175" cy="230" r="40" class="node-circle" fill="url(#grad-selected)"></circle><text x="175" y="235" class="node-text">3/5</text>
-                            <circle cx="300" cy="230" r="35" class="node-circle" fill="#4b5563"></circle><text x="300" y="235" class="sub-text">1/2</text>
-                            
-                            <circle cx="175" cy="380" r="40" class="node-circle" fill="url(#grad-expand)"></circle><text x="175" y="385" class="node-text">?</text>
-                            <circle cx="100" cy="530" r="35" class="node-circle" fill="#4b5563"></circle><text x="100" y="535" class="sub-text">0/0</text>
-                            <circle cx="250" cy="530" r="35" class="node-circle" fill="#4b5563"></circle><text x="250" y="535" class="sub-text">0/0</text>
-                            <text x="175" cy="620" fill="#3b82f6" font-size="20" font-family="Poppins" font-weight="600">v = +0.8</text>
-                            
-                            <!-- ARESTAS -->
-                            <path d="M 175 120 L 50 195" class="edge" stroke="#4b5563"></path>
-                            <path d="M 175 120 L 175 190" class="edge" stroke="#f59e0b" marker-end="url(#arrow-selection)"></path>
-                            <path d="M 175 120 L 300 195" class="edge" stroke="#4b5563"></path>
-
-                            <path d="M 175 270 L 175 340" class="edge" stroke="#10b981" marker-end="url(#arrow-expansion)" stroke-dasharray="8"></path>
-                            
-                            <path d="M 175 420 L 100 495" class="edge" stroke="#4b5563" stroke-dasharray="4"></path>
-                            <path d="M 175 420 L 250 495" class="edge" stroke="#4b5563" stroke-dasharray="4"></path>
-
-                             <!-- RETROPROPAGAÇÃO -->
-                            <path d="M 175 560 Q 50 450 175 420" stroke="#a78bfa" stroke-width="3" fill="none" marker-end="url(#arrow-backprop)"></path>
-                            <path d="M 175 340 Q 50 300 175 270" stroke="#a78bfa" stroke-width="3" fill="none" marker-end="url(#arrow-backprop)"></path>
-                            <path d="M 175 190 Q 50 150 175 120" stroke="#a78bfa" stroke-width="3" fill="none" marker-end="url(#arrow-backprop)"></path>
-                        </g>
-                    </svg>
+                    <p class="text-xl bg-gray-800/50 p-6 rounded-lg">Começando da raiz, o algoritmo desce pela árvore, escolhendo o caminho que equilibra <strong class="text-yellow-300">exploração</strong> (nós pouco visitados) e <strong class="text-yellow-300">aproveitamento</strong> (nós com alta taxa de vitória), guiado pela rede neural.</p>
                 </div>
-                <!-- Coluna Direita: Passos -->
-                <div class="flex-1 space-y-3 text-lg">
-                    <div class="p-3 bg-gray-800/50 rounded-md"><strong>1. Seleção:</strong> Começando da raiz, a árvore é percorrida selecionando o caminho que equilibra exploração e aproveitamento, guiado pela política (p) e valor (v) da rede.</div>
-                    <div class="p-3 bg-gray-800/50 rounded-md"><strong>2. Expansão:</strong> Ao chegar a um nó não visitado (folha), a rede avalia a posição. Os movimentos possíveis são adicionados como novos nós na árvore.</div>
-                    <div class="p-3 bg-gray-800/50 rounded-md"><strong>3. Avaliação (Simulação):</strong> Em vez de simulações aleatórias (rollouts), o AlphaZero usa o valor <strong class="text-white">(v)</strong> previsto pela rede neural como o resultado da simulação. Isto é extremamente mais eficiente.</div>
-                    <div class="p-3 bg-gray-800/50 rounded-md"><strong>4. Retropropagação (Backpropagation):</strong> O valor <strong class="text-white">(v)</strong> obtido na evaluation é propagado de volta, atualizando as estatísticas de todos os nós no caminho percorrido.</div>
+                <div class="flex-1">
+                    <svg width="100%" viewBox="0 0 400 350" xmlns="http://www.w3.org/2000/svg" class="w-full max-w-md mx-auto">
+                        <style>.node-text{font-family:'Poppins', sans-serif;font-size:16px;text-anchor:middle;fill:white;font-weight:600;} .edge{stroke-width:3;} .node-circle{stroke-width:4;}</style>
+                        <path d="M 200 60 L 100 160" class="edge" stroke="#6b7280"></path><path d="M 200 60 L 200 160" class="edge" stroke="#f59e0b" stroke-width="5"></path><path d="M 200 60 L 300 160" class="edge" stroke="#6b7280"></path>
+                        <path d="M 200 200 L 200 300" class="edge" stroke="#f59e0b" stroke-width="5"></path>
+                        <circle cx="200" cy="40" r="30" class="node-circle" stroke="#60a5fa" fill="#1f2937"></circle><text x="200" y="45" class="node-text">Raiz</text>
+                        <circle cx="100" cy="180" r="25" class="node-circle" stroke="#6b7280" fill="#1f2937"></circle><text x="100" y="185" class="node-text">A</text>
+                        <circle cx="200" cy="180" r="30" class="node-circle" stroke="#f59e0b" fill="#1f2937"></circle><text x="200" y="185" class="node-text">B</text>
+                        <circle cx="300" cy="180" r="25" class="node-circle" stroke="#6b7280" fill="#1f2937"></circle><text x="300" y="185" class="node-text">C</text>
+                        <circle cx="200" cy="320" r="30" class="node-circle" stroke="#f59e0b" fill="#1f2937"></circle><text x="200" y="325" class="node-text">D</text>
+                    </svg>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Slide 6: Como o AlphaZero Aprende? (COM LOSS)-->
+    <!-- Slide 7: MCTS - Etapa 2 -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Etapa 2: Expansão</h2>
+            <div class="flex flex-col lg:flex-row gap-8 items-center text-left">
+                <div class="flex-1">
+                     <p class="text-xl bg-gray-800/50 p-6 rounded-lg">Ao chegar a um nó folha (que ainda não foi expandido), a rede neural adiciona todos os movimentos possíveis como <strong class="text-green-300">novos nós folha</strong> na árvore.</p>
+                     <p class="text-xl bg-gray-800/50 p-6 rounded-lg">Cada novo nó folha terá sua propriedade de probabilidade a priori como definida pela rede.</p>                       
+                </div>
+                <div class="flex-1">
+                   <svg width="100%" viewBox="0 0 400 350" xmlns="http://www.w3.org/2000/svg" class="w-full max-w-md mx-auto">
+                        <style>.node-text{font-family:'Poppins', sans-serif;font-size:16px;text-anchor:middle;fill:white;font-weight:600;} .edge{stroke-width:3;} .node-circle{stroke-width:4;}</style>
+                        <path d="M 200 60 L 200 160" class="edge" stroke="#6b7280"></path>
+                        <path d="M 200 200 L 100 300" class="edge" stroke="#10b981" stroke-dasharray="5"></path>
+                        <path d="M 200 200 L 300 300" class="edge" stroke="#10b981" stroke-dasharray="5"></path>
+                        <circle cx="200" cy="40" r="30" class="node-circle" stroke="#60a5fa" fill="#1f2937"></circle><text x="200" y="45" class="node-text">...</text>
+                        <circle cx="200" cy="180" r="30" class="node-circle" stroke="#10b981" fill="#1f2937"></circle><text x="200" y="185" class="node-text">D</text>
+                        <circle cx="100" cy="320" r="25" class="node-circle" stroke="#10b981" fill="#1f2937"></circle><text x="100" y="325" class="node-text">E</text>
+                        <circle cx="300" cy="320" r="25" class="node-circle" stroke="#10b981" fill="#1f2937"></circle><text x="300" y="325" class="node-text">F</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Slide 8: MCTS - Etapa 3 -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Etapa 3: Avaliação</h2>
+            <div class="flex flex-col lg:flex-row gap-8 items-center text-left">
+                <div class="flex-1">
+                     <p class="text-xl bg-gray-800/50 p-6 rounded-lg">Em vez de simular o resto do jogo aleatoriamente, o AlphaZero usa a <strong class="text-blue-300">previsão de valor (v)</strong> da sua rede neural como uma "avaliação de especialista" do nó recém-expandido. Isso é muito mais eficiente.</p>
+                </div>
+                <div class="flex-1">
+                   <svg width="100%" viewBox="0 0 400 350" xmlns="http://www.w3.org/2000/svg" class="w-full max-w-md mx-auto">
+                        <style>.node-text{font-family:'Poppins', sans-serif;font-size:16px;text-anchor:middle;fill:white;font-weight:600;} .edge{stroke-width:3;} .node-circle{stroke-width:4;} .val-text{font-family:'Poppins',sans-serif;font-size:24px;font-weight:700;fill:#60a5fa;text-anchor:middle;}</style>
+                        <circle cx="200" cy="180" r="30" class="node-circle" stroke="#60a5fa" fill="#1f2937"></circle><text x="200" y="185" class="node-text">D</text>
+                        <text x="200" y="250" class="val-text">v = +0.8</text>
+                        <path d="M 200 210 L 200 220" stroke="#60a5fa" stroke-width="3" marker-end="url(#arrow)"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Slide 9: MCTS - Etapa 4 -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Etapa 4: Retropropagação</h2>
+            <div class="flex flex-col lg:flex-row gap-8 items-center text-left">
+                <div class="flex-1">
+                     <p class="text-xl bg-gray-800/50 p-6 rounded-lg">O resultado da avaliação (o valor <strong class="text-purple-300">v</strong>) é propagado de volta pela árvore, atualizando as estatísticas (valor médio das folhas/visitas) de todos os nós no caminho percorrido.</p>
+                </div>
+                <div class="flex-1">
+                   <svg width="100%" viewBox="0 0 400 350" xmlns="http://www.w3.org/2000/svg" class="w-full max-w-md mx-auto">
+                        <style>.node-text{font-family:'Poppins', sans-serif;font-size:16px;text-anchor:middle;fill:white;font-weight:600;} .edge{stroke-width:5;} .node-circle{stroke-width:4;}</style>
+                        <path d="M 200 300 L 200 210" class="edge" stroke="#a78bfa"></path>
+                        <path d="M 200 160 L 200 70" class="edge" stroke="#a78bfa"></path>
+                        <circle cx="200" cy="40" r="30" class="node-circle" stroke="#a78bfa" fill="#1f2937"></circle><text x="200" y="45" class="node-text">1/1</text>
+                        <circle cx="200" cy="180" r="30" class="node-circle" stroke="#a78bfa" fill="#1f2937"></circle><text x="200" y="185" class="node-text">1/1</text>
+                        <circle cx="200" cy="320" r="30" class="node-circle" stroke="#a78bfa" fill="#1f2937"></circle><text x="200" y="325" class="node-text">1/1</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+        
+    <!-- Slide 10: Como o AlphaZero Aprende? -->
     <section class="slide">
         <div class="slide-content">
             <h2>Como o AlphaZero Aprende?</h2>
@@ -278,10 +299,14 @@
                 <div class="flex-1 text-xl max-w-lg mx-auto space-y-4 text-left">
                     <div class="flex items-start gap-4 p-4 bg-gray-800/50 rounded-lg">
                         <div class="text-blue-400 text-4xl font-bold">1</div>
-                        <div><strong class="text-blue-300">Aprender:</strong> O resultado final de cada partida (+1, -1, 0) é usado como um sinal de verdade para treinar a rede.</div>
+                        <div><strong class="text-blue-300">Jogar:</strong> A rede neural joga milhares de partidas contra si mesma, começando do zero.</div>
                     </div>
                     <div class="flex items-start gap-4 p-4 bg-gray-800/50 rounded-lg">
                         <div class="text-blue-400 text-4xl font-bold">2</div>
+                        <div><strong class="text-blue-300">Aprender:</strong> O resultado final de cada partida (+1, -1, 0) é usado como um sinal de verdade para treinar a rede.</div>
+                    </div>
+                    <div class="flex items-start gap-4 p-4 bg-gray-800/50 rounded-lg">
+                        <div class="text-blue-400 text-4xl font-bold">3</div>
                         <div><strong class="text-blue-300">Otimizar:</strong> A rede é ajustada para minimizar uma <span class="text-white font-semibold">função de perda</span>, corrigindo seus erros.</div>
                     </div>
                 </div>
@@ -298,8 +323,8 @@
             </div>
         </div>
     </section>
-    
-    <!-- Slide 7: Diferenças Chave do AlphaGo Zero -->
+
+    <!-- Slide 11: Diferenças Chave do AlphaGo Zero -->
     <section class="slide">
         <div class="slide-content">
             <h2>Diferenças Chave para o AlphaGo Zero</h2>
@@ -337,7 +362,7 @@
         </div>
     </section>
 
-    <!-- Slide 8: O Experimento -->
+    <!-- Slide 12: O Experimento -->
     <section class="slide">
         <div class="slide-content">
             <h2>O Experimento</h2>
@@ -358,7 +383,7 @@
         </div>
     </section>
 
-    <!-- Slide 9: Resultados: Partidas de Avaliação -->
+    <!-- Slide 13: Resultados: Partidas de Avaliação -->
     <section class="slide">
         <div class="slide-content">
             <h2>Resultados: Partidas contra Máquinas</h2>
@@ -380,8 +405,8 @@
              <p class="mt-8 text-xl text-gray-400">Resultados igualmente dominantes no Shogi e Go.</p>
         </div>
     </section>
-
-    <!-- Slide 10: Análise: Busca Seletiva e Estilo de Jogo -->
+    
+    <!-- Slide 14: Análise: Busca Seletiva e Estilo de Jogo -->
     <section class="slide">
         <div class="slide-content">
             <h2>Análise: Busca Seletiva e Estilo de Jogo</h2>
@@ -401,7 +426,7 @@
         </div>
     </section>
     
-    <!-- Slide 11: Pergunta -->
+    <!-- Slide 15: Pergunta -->
     <section class="slide">
         <div class="slide-content">
             <h2>Pergunta</h2>
@@ -413,7 +438,7 @@
         </div>
     </section>
 
-    <!-- Slide 12: Detalhes do Treinamento -->
+    <!-- Slide 16: Detalhes do Treinamento -->
     <section class="slide">
         <div class="slide-content">
             <h2>Detalhes do Treinamento</h2>
@@ -438,7 +463,7 @@
         </div>
     </section>
 
-    <!-- Slide 13: Conclusão e Impacto -->
+    <!-- Slide 17: Conclusão e Impacto -->
     <section class="slide">
         <div class="slide-content">
             <h2>Conclusão e Impacto</h2>
@@ -451,7 +476,7 @@
         </div>
     </section>
 
-    <!-- NOVO Slide 14: Referências -->
+    <!-- Slide 18: Referências -->
     <section class="slide">
         <div class="slide-content">
             <h2>Bibliografia</h2>
@@ -463,7 +488,7 @@
         </div>
     </section>
     
-    <!-- Slide 15: Perguntas -->
+    <!-- Slide 19: Perguntas -->
     <section class="slide title-slide-bg">
         <div class="slide-content text-center">
              <h2 class="text-6xl font-bold mb-8">Perguntas?</h2>
