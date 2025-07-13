@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apresentação: AlphaZero</title>
+    
+    <!-- Tailwind CSS para estilização -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts para tipografia profissional -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Ícones Lucide para elementos visuais -->
+    <script src="https://unpkg.com/lucide-react@latest/dist/lucide-react.js"></script>
+
+    <style>
+        /* Estilos personalizados */
+        body {
+            font-family: 'Lato', sans-serif;
+            background-color: #111827; /* Fundo escuro */
+            color: #F3F4F6; /* Texto claro */
+            overflow: hidden; /* Evita barras de rolagem */
+        }
+
+        h1, h2, h3 {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100vh;
+            display: none; /* Esconde todos os slides por padrão */
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 5vw;
+            position: absolute;
+            top: 0;
+            left: 0;
+            transition: opacity 0.6s ease-in-out;
+            opacity: 0;
+        }
+
+        .slide.active {
+            display: flex; /* Mostra o slide ativo */
+            opacity: 1;
+        }
+
+        /* Fundo gradiente para o slide de título */
+        .title-slide-bg {
+             background: radial-gradient(circle, rgba(31, 41, 55, 0.9) 0%, rgba(17, 24, 39, 1) 70%);
+        }
+
+        .nav-button {
+            position: fixed;
+            bottom: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            padding: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            z-index: 1000;
+        }
+
+        .nav-button:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        #prev-btn {
+            left: 40px;
+        }
+
+        #next-btn {
+            right: 40px;
+        }
+
+        #slide-counter {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.3);
+            color: #9CA3AF;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 1000;
+        }
+        
+        .slide-content {
+            width: 100%;
+            max-width: 1200px;
+            text-align: center;
+        }
+
+        .slide-content h2 {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #60A5FA; /* Azul para destaque */
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #3B82F6;
+            display: inline-block;
+            padding-bottom: 0.5rem;
+        }
+        
+        .slide-content ul {
+            list-style-position: inside;
+            text-align: left;
+            margin: 0 auto;
+            max-width: 800px;
+        }
+
+        .slide-content li {
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            line-height: 1.6;
+        }
+        
+        .diagram-bg {
+           /* No longer needed with inline SVG */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Slide 1: Título -->
+    <section class="slide active title-slide-bg">
+        <div class="slide-content text-center">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">AlphaZero: Um Algoritmo Geral de Aprendizado por Reforço</h1>
+            <div class="bg-blue-600 text-white px-8 py-3 rounded-full inline-block text-lg">
+                Kauan Moraes
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 2: Introdução e Motivação -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Introdução e Motivação</h2>
+            <ul class="space-y-6 text-xl text-left max-w-4xl mx-auto">
+                <li><strong class="text-blue-300">Contexto:</strong> Tempos difíceis para humanos vs máquina</li>
+                <li><strong class="text-blue-300">Abordagem Clássica:</strong> Programas tradicionais com busca Alpha-Beta e funções de avaliação "esculpidas à mão", sendo altamente especializados.</li>
+                <li><strong class="text-blue-300">O Grande Desafio:</strong> Criar um programa que aprenda por si só, a partir das regras básicos, sem conhecimento de domínio.</li>
+                <li><strong class="text-blue-300">A Proposta do Paper:</strong> Generalizar a abordagem do AlphaGo Zero em um único algoritmo, o <span class="font-bold text-white bg-blue-500/20 px-2 py-1 rounded">AlphaZero</span>, capaz de dominar múltiplos jogos.</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- NOVO Slide 3: Aprendizado por Self-Play -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Aprendizado por Self-Play</h2>
+            <div class="bg-gray-800 p-8 rounded-lg border border-gray-700 max-w-3xl mx-auto text-center">
+                <h3 class="text-2xl font-semibold mb-3 text-blue-300">Jogar Contra Si Mesmo</h3>
+                <p class="text-xl">O ponto de partida é o mais básico: o algoritmo joga milhares de partidas contra si mesmo, começando com jogadas aleatórias.</p>
+                <p class="mt-4 text-xl text-gray-400">Não há dados de jogos humanos ou livros de abertura. O conhecimento é gerado a partir da própria experiência.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 4: O Algoritmo AlphaZero -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>O Algoritmo AlphaZero</h2>
+            <div class="flex flex-col md:flex-row gap-8 text-left text-lg">
+                <div class="flex-1 bg-gray-800 p-6 rounded-lg border border-gray-700">
+                    <h3 class="text-2xl font-semibold mb-3 text-blue-300">1. Rede Neural Profunda (DNN)</h3>
+                    <p class="mb-2"><code class="bg-gray-700 p-1 rounded-md text-white">(p, v) = f<sub>θ</sub>(s)</code></p>
+                    <p><strong class="font-semibold text-white">Entrada (s):</strong> Posição do tabuleiro.</p>
+                    <p><strong class="font-semibold text-white">Saídas:</strong> Vetor de Probabilidades (p) e Valor Escalar (v).</p>
+                    <p class="mt-2 text-gray-400">A rede neural funciona como o "cérebro" do AlphaZero.</p>
+                </div>
+                <div class="flex-1 bg-gray-800 p-6 rounded-lg border border-gray-700">
+                    <h3 class="text-2xl font-semibold mb-3 text-blue-300">2. Busca em Árvore de Monte Carlo (MCTS)</h3>
+                    <p>Usa um algoritmo de busca de propósito geral, guiado pela rede neural para explorar as jogadas mais promissoras. Retorna um vetor π de probabilidade sobre ações possíveis.</p>
+                    <p class="mt-4 text-gray-400">Vamos ver como funciona em detalhe...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+
+
+    <!-- Slide 5: A busca MCTS (Introdução) -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>A Busca MCTS: Visão Geral</h2>
+            <p class="text-xl max-w-3xl mx-auto mb-8">Para "pensar", o AlphaZero simula milhares de jogos futuros a partir da posição atual, seguindo um ciclo de 4 etapas.</p>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-2xl font-semibold">
+                <div class="bg-gray-800 p-6 rounded-lg border-2 border-yellow-400">1. Seleção</div>
+                <div class="bg-gray-800 p-6 rounded-lg border-2 border-green-400">2. Expansão</div>
+                <div class="bg-gray-800 p-6 rounded-lg border-2 border-blue-400">3. Avaliação</div>
+                <div class="bg-gray-800 p-6 rounded-lg border-2 border-purple-400">4. Retropropagação</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 6: MCTS - Etapa 1 -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Etapa 1: Seleção</h2>
+            <div class="flex flex-col lg:flex-row gap-8 items-center text-left">
+                <div class="flex-1">
+                    <p class="text-xl bg-gray-800/50 p-6 rounded-lg">Começando da raiz, o algoritmo desce pela árvore, escolhendo o caminho que equilibra <strong class="text-yellow-300">exploração</strong> (nós pouco visitados) e <strong class="text-yellow-300">aproveitamento</strong> (nós com alta taxa de vitória), guiado pela rede neural.</p>
+                </div>
+                <div class="flex-1">
+                    <svg width="100%" viewBox="0 0 400 350" xmlns="http://www.w3.org/2000/svg" class="w-full max-w-md mx-auto">
+                        <style>.node-text{font-family:'Poppins', sans-serif;font-size:16px;text-anchor:middle;fill:white;font-weight:600;} .edge{stroke-width:3;} .node-circle{stroke-width:4;}</style>
+                        <path d="M 200 60 L 100 160" class="edge" stroke="#6b7280"></path><path d="M 200 60 L 200 160" class="edge" stroke="#f59e0b" stroke-width="5"></path><path d="M 200 60 L 300 160" class="edge" stroke="#6b7280"></path>
+                        <path d="M 200 200 L 200 300" class="edge" stroke="#f59e0b" stroke-width="5"></path>
+                        <circle cx="200" cy="40" r="30" class="node-circle" stroke="#60a5fa" fill="#1f2937"></circle><text x="200" y="45" class="node-text">Raiz</text>
+                        <circle cx="100" cy="180" r="25" class="node-circle" stroke="#6b7280" fill="#1f2937"></circle><text x="100" y="185" class="node-text">A</text>
+                        <circle cx="200" cy="180" r="30" class="node-circle" stroke="#f59e0b" fill="#1f2937"></circle><text x="200" y="185" class="node-text">B</text>
+                        <circle cx="300" cy="180" r="25" class="node-circle" stroke="#6b7280" fill="#1f2937"></circle><text x="300" y="185" class="node-text">C</text>
+                        <circle cx="200" cy="320" r="30" class="node-circle" stroke="#f59e0b" fill="#1f2937"></circle><text x="200" y="325" class="node-text">D</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 7: MCTS - Etapa 2 -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Etapa 2: Expansão</h2>
+            <div class="flex flex-col lg:flex-row gap-8 items-center text-left">
+                <div class="flex-1">
+                     <p class="text-xl bg-gray-800/50 p-6 rounded-lg">Ao chegar a um nó folha (que ainda não foi expandido), a rede neural adiciona todos os movimentos possíveis como <strong class="text-green-300">novos nós folha</strong> na árvore.</p>
+                     <p class="text-xl bg-gray-800/50 p-6 rounded-lg">Cada novo nó folha terá sua propriedade de probabilidade a priori como definida pela rede.</p>                       
+                </div>
+                <div class="flex-1">
+                   <svg width="100%" viewBox="0 0 400 350" xmlns="http://www.w3.org/2000/svg" class="w-full max-w-md mx-auto">
+                        <style>.node-text{font-family:'Poppins', sans-serif;font-size:16px;text-anchor:middle;fill:white;font-weight:600;} .edge{stroke-width:3;} .node-circle{stroke-width:4;}</style>
+                        <path d="M 200 60 L 200 160" class="edge" stroke="#6b7280"></path>
+                        <path d="M 200 200 L 100 300" class="edge" stroke="#10b981" stroke-dasharray="5"></path>
+                        <path d="M 200 200 L 300 300" class="edge" stroke="#10b981" stroke-dasharray="5"></path>
+                        <circle cx="200" cy="40" r="30" class="node-circle" stroke="#60a5fa" fill="#1f2937"></circle><text x="200" y="45" class="node-text">...</text>
+                        <circle cx="200" cy="180" r="30" class="node-circle" stroke="#10b981" fill="#1f2937"></circle><text x="200" y="185" class="node-text">D</text>
+                        <circle cx="100" cy="320" r="25" class="node-circle" stroke="#10b981" fill="#1f2937"></circle><text x="100" y="325" class="node-text">E</text>
+                        <circle cx="300" cy="320" r="25" class="node-circle" stroke="#10b981" fill="#1f2937"></circle><text x="300" y="325" class="node-text">F</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Slide 8: MCTS - Etapa 3 -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Etapa 3: Avaliação</h2>
+            <div class="flex flex-col lg:flex-row gap-8 items-center text-left">
+                <div class="flex-1">
+                     <p class="text-xl bg-gray-800/50 p-6 rounded-lg">Em vez de simular o resto do jogo aleatoriamente, o AlphaZero usa a <strong class="text-blue-300">previsão de valor (v)</strong> da sua rede neural como uma "avaliação de especialista" do nó recém-expandido. Isso é muito mais eficiente.</p>
+                </div>
+                <div class="flex-1">
+                   <svg width="100%" viewBox="0 0 400 350" xmlns="http://www.w3.org/2000/svg" class="w-full max-w-md mx-auto">
+                        <style>.node-text{font-family:'Poppins', sans-serif;font-size:16px;text-anchor:middle;fill:white;font-weight:600;} .edge{stroke-width:3;} .node-circle{stroke-width:4;} .val-text{font-family:'Poppins',sans-serif;font-size:24px;font-weight:700;fill:#60a5fa;text-anchor:middle;}</style>
+                        <circle cx="200" cy="180" r="30" class="node-circle" stroke="#60a5fa" fill="#1f2937"></circle><text x="200" y="185" class="node-text">D</text>
+                        <text x="200" y="250" class="val-text">v = +0.8</text>
+                        <path d="M 200 210 L 200 220" stroke="#60a5fa" stroke-width="3" marker-end="url(#arrow)"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Slide 9: MCTS - Etapa 4 -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Etapa 4: Retropropagação</h2>
+            <div class="flex flex-col lg:flex-row gap-8 items-center text-left">
+                <div class="flex-1">
+                     <p class="text-xl bg-gray-800/50 p-6 rounded-lg">O resultado da avaliação (o valor <strong class="text-purple-300">v</strong>) é propagado de volta pela árvore, atualizando as estatísticas (valor médio das folhas/visitas) de todos os nós no caminho percorrido.</p>
+                </div>
+                <div class="flex-1">
+                   <svg width="100%" viewBox="0 0 400 350" xmlns="http://www.w3.org/2000/svg" class="w-full max-w-md mx-auto">
+                        <style>.node-text{font-family:'Poppins', sans-serif;font-size:16px;text-anchor:middle;fill:white;font-weight:600;} .edge{stroke-width:5;} .node-circle{stroke-width:4;}</style>
+                        <path d="M 200 300 L 200 210" class="edge" stroke="#a78bfa"></path>
+                        <path d="M 200 160 L 200 70" class="edge" stroke="#a78bfa"></path>
+                        <circle cx="200" cy="40" r="30" class="node-circle" stroke="#a78bfa" fill="#1f2937"></circle><text x="200" y="45" class="node-text">1/1</text>
+                        <circle cx="200" cy="180" r="30" class="node-circle" stroke="#a78bfa" fill="#1f2937"></circle><text x="200" y="185" class="node-text">1/1</text>
+                        <circle cx="200" cy="320" r="30" class="node-circle" stroke="#a78bfa" fill="#1f2937"></circle><text x="200" y="325" class="node-text">1/1</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </section>
+        
+    <!-- Slide 10: Como o AlphaZero Aprende? -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Como o AlphaZero Aprende?</h2>
+            <div class="flex flex-col md:flex-row gap-8 items-center">
+                <!-- Coluna Esquerda: Passos do Aprendizado -->
+                <div class="flex-1 text-xl max-w-lg mx-auto space-y-4 text-left">
+                    <div class="flex items-start gap-4 p-4 bg-gray-800/50 rounded-lg">
+                        <div class="text-blue-400 text-4xl font-bold">1</div>
+                        <div><strong class="text-blue-300">Aprender:</strong> O resultado final de cada partida (+1, -1, 0) é usado como um sinal de verdade para treinar a rede.</div>
+                    </div>
+                    <div class="flex items-start gap-4 p-4 bg-gray-800/50 rounded-lg">
+                        <div class="text-blue-400 text-4xl font-bold">2</div>
+                        <div><strong class="text-blue-300">Otimizar:</strong> A rede é ajustada para minimizar uma <span class="text-white font-semibold">função de perda</span>, corrigindo seus erros.</div>
+                    </div>
+                </div>
+                <!-- Coluna Direita: Função de Perda -->
+                <div class="flex-1 mt-8 md:mt-0 text-left bg-gray-900 p-6 rounded-lg border-2 border-blue-500 shadow-xl shadow-blue-500/10">
+                    <h3 class="text-2xl font-semibold mb-4 text-center text-blue-300">Função de Perda (Loss)</h3>
+                    <p class="mb-4 text-center text-xl font-mono bg-gray-800 p-3 rounded-md">l = (z - v)² - πᵀlog(p) + c||θ||²</p>
+                    <ul class="space-y-3 text-lg text-gray-300">
+                        <li><strong class="text-white">(z - v)²:</strong> <span class="text-blue-400">Erro do valor.</span> Compara o resultado previsto (v) com o real (z).</li>
+                        <li><strong class="text-white">πᵀlog(p):</strong> <span class="text-green-400">Erro da política.</span> Compara os movimentos do MCTS (π) com os da rede (p).</li>
+                        <li><strong class="text-white">c||θ||²:</strong> <span class="text-yellow-400">Regularização L2.</span> Evita que os pesos da rede (θ) fiquem grandes demais (overfitting).</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 11: Diferenças Chave do AlphaGo Zero -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Diferenças Chave para o AlphaGo Zero</h2>
+            <table class="w-full max-w-5xl mx-auto mt-8 text-lg border-collapse">
+                <thead>
+                    <tr class="border-b-2 border-blue-500">
+                        <th class="p-4 text-left text-xl">Característica</th>
+                        <th class="p-4 text-left text-xl bg-gray-800/30">AlphaGo Zero (Especializado)</th>
+                        <th class="p-4 text-left text-xl bg-blue-600/30">AlphaZero (Geral)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b border-gray-700">
+                        <td class="p-4 font-bold">Resultado</td>
+                        <td class="p-4 bg-gray-800/30">Otimizado para vitória/derrota (binário).</td>
+                        <td class="p-4 bg-blue-600/30">Otimizado para resultado esperado (lida com empates).</td>
+                    </tr>
+                    <tr class="border-b border-gray-700">
+                        <td class="p-4 font-bold">Simetria</td>
+                        <td class="p-4 bg-gray-800/30">Explorava as simetrias do tabuleiro de Go.</td>
+                        <td class="p-4 bg-blue-600/30">Não assume simetrias (funciona em jogos como xadrez).</td>
+                    </tr>
+                    <tr class="border-b border-gray-700">
+                        <td class="p-4 font-bold">Treinamento</td>
+                        <td class="p-4 bg-gray-800/30">Competia com a "melhor" versão anterior.</td>
+                        <td class="p-4 bg-blue-600/30">Mantém uma única rede neural continuamente atualizada.</td>
+                    </tr>
+                     <tr>
+                        <td class="p-4 font-bold">Hiperparâmetros</td>
+                        <td class="p-4 bg-gray-800/30">Ajustados especificamente para o Go.</td>
+                        <td class="p-4 bg-blue-600/30">Usa os mesmos hiperparâmetros para todos os jogos.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- Slide 12: O Experimento -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>O Experimento</h2>
+            <div class="grid md:grid-cols-2 gap-8 mt-8 text-left text-xl">
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-3 text-blue-300">Jogos e Competidores</h3>
+                    <p><strong>Xadrez:</strong> vs. Stockfish (Campeão 2016 TCEC)</p>
+                    <p><strong>Shogi:</strong> vs. Elmo (Campeão 2017 CSA)</p>
+                    <p><strong>Go:</strong> vs. AlphaGo Zero (versão anterior)</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-3 text-blue-300">Treinamento Rápido</h3>
+                    <p><strong>Xadrez:</strong> Atingiu performance sobre-humana em <span class="text-white font-bold">4 horas</span>.</p>
+                    <p><strong>Shogi:</strong> Atingiu performance sobre-humana em <span class="text-white font-bold">2 horas</span>.</p>
+                    <p><strong>Go:</strong> Superou o AlphaGo Lee em <span class="text-white font-bold">30 horas</span>.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 13: Resultados: Partidas de Avaliação -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Resultados: Partidas contra Máquinas</h2>
+            <p class="text-xl mb-6 text-gray-400">Em 1000 partidas de xadrez contra o Stockfish, o AlphaZero foi dominante.</p>
+             <div class="flex justify-center items-center gap-8 text-2xl">
+                <div class="bg-green-500/20 text-green-300 border border-green-500 p-6 rounded-lg">
+                    <p class="font-bold text-4xl">155</p>
+                    <p>Vitórias (AlphaZero)</p>
+                </div>
+                <div class="bg-gray-500/20 text-gray-300 border border-gray-500 p-6 rounded-lg">
+                    <p class="font-bold text-4xl">839</p>
+                    <p>Empates</p>
+                </div>
+                <div class="bg-red-500/20 text-red-300 border border-red-500 p-6 rounded-lg">
+                    <p class="font-bold text-4xl">6</p>
+                    <p>Vitórias (Stockfish)</p>
+                </div>
+            </div>
+             <p class="mt-8 text-xl text-gray-400">Resultados igualmente dominantes no Shogi e Go.</p>
+        </div>
+    </section>
+    
+    <!-- Slide 14: Análise: Busca Seletiva e Estilo de Jogo -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Análise: Busca Seletiva e Estilo de Jogo</h2>
+            <div class="flex flex-col gap-8 text-left text-lg mt-8 max-w-4xl mx-auto">
+                 <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                    <h3 class="text-2xl font-semibold mb-3 text-blue-300">Eficiência de Busca</h3>
+                    <p><strong class="text-white">Stockfish:</strong> 60 milhões de posições/s</p>
+                    <p><strong class="text-white">AlphaZero:</strong> 60 mil posições/s</p>
+                    <p class="mt-2 text-gray-400">A busca é 1000x menor, mas muito mais seletiva e focada nos lances promissores.</p>
+                    <p class="mt-2 text-yellow-300 font-semibold">Mesmo com 1/10 do tempo de pensamento do seu oponente, o AlphaZero venceu o Stockfish.</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg border border-gray-700">
+                    <h3 class="text-2xl font-semibold mb-3 text-blue-300">Descoberta de Conhecimento</h3>
+                    <p>Desenvolveu um estilo de jogo "fluido" e "posicional", com sacrifícios estratégicos que confundiam os motores tradicionais.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Slide 15: Pergunta -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Pergunta</h2>
+            <ul class="space-y-6 text-xl text-left max-w-4xl mx-auto">
+                <li>Ok, tudo muito bom, mas surgem perguntas:</li>
+                <li><strong class="text-blue-300">O quão custoso é o algoritmo computacionalmente?</strong></li>
+                <li><strong class="text-blue-300">Daria para montarmos um competitivo no IMPA?</strong></li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Slide 16: Detalhes do Treinamento -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Detalhes do Treinamento</h2>
+            <div class="grid md:grid-cols-2 gap-8 mt-8 text-left text-xl">
+                <div class="bg-gray-800 p-6 rounded-lg col-span-2">
+                    <h3 class="text-2xl font-semibold mb-3 text-blue-300">Hardware</h3>
+                    <p><strong class="text-white">Geração de Jogos (Self-Play):</strong> 5.000 TPUs de 1ª Geração</p>
+                    <p><strong class="text-white">Treinamento da Rede Neural:</strong> 16 TPUs de 2ª Geração</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-3 text-blue-300">Passos de Treinamento</h3>
+                    <p class="text-4xl font-bold text-white">700.000</p>
+                    <p class="text-gray-400">(mini-batches de 4096 posições)</p>
+                </div>
+                <div class="bg-gray-800 p-6 rounded-lg">
+                    <h3 class="text-2xl font-semibold mb-3 text-blue-300">Tempo Total</h3>
+                     <p><strong class="text-white">Xadrez:</strong> ~9 horas</p>
+                     <p><strong class="text-white">Shogi:</strong> ~12 horas</p>
+                     <p><strong class="text-white">Go:</strong> ~13 dias</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 17: Conclusão e Impacto -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Conclusão e Impacto</h2>
+            <ul class="space-y-6 text-xl text-left max-w-4xl mx-auto">
+                <li><strong class="text-blue-300">Marco na IA:</strong> Um único algoritmo genérico atingiu performance sobre-humana em múltiplos jogos.</li>
+                <li><strong class="text-blue-300">Aprendizado *Tabula Rasa*:</strong> Sucesso sem conhecimento de domínio, aprendendo do zero apenas com as regras.</li>
+                <li><strong class="text-blue-300">Questionando Crenças:</strong> A superioridade com MCTS desafia a crença de que a busca alpha-beta era inerentemente superior no xadrez.</li>
+                <li><strong class="text-blue-300">O Futuro:</strong> Um passo significativo em direção a um sistema de jogo geral, capaz de aprender a dominar qualquer jogo.</li>
+            </ul>
+        </div>
+    </section>
+
+    <!-- Slide 18: Referências -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2>Bibliografia</h2>
+            <ul class="text-left text-lg max-w-4xl mx-auto space-y-4 list-none">
+                <li class="bg-gray-800 p-4 rounded-md">
+                    <span class="font-bold text-white">Silver, D., et al. (2018).</span> A general reinforcement learning algorithm that masters chess, shogi, and Go through self-play. <em>Science</em>, <em>362</em>(6419), 1140-1144. DOI: 10.1126/science.aar6404.
+                </li>
+            </ul>
+        </div>
+    </section>
+    
+    <!-- Slide 19: Perguntas -->
+    <section class="slide title-slide-bg">
+        <div class="slide-content text-center">
+             <h2 class="text-6xl font-bold mb-8">Perguntas?</h2>
+             <p class="text-3xl text-gray-300">Obrigado!</p>
+        </div>
+    </section>
+
+
+    <!-- Controles de Navegação -->
+    <button id="prev-btn" class="nav-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+    </button>
+    <button id="next-btn" class="nav-button">
+       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-right"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+    </button>
+    
+    <!-- Contador de Slides -->
+    <div id="slide-counter"></div>
+
+
+    <script>
+        // Lógica de navegação dos slides
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const slideCounter = document.getElementById('slide-counter');
+            let currentSlide = 0;
+
+            function showSlide(index) {
+                slides.forEach((slide, i) => {
+                    slide.classList.toggle('active', i === index);
+                });
+                currentSlide = index;
+                updateCounter();
+                updateNavButtons();
+            }
+            
+            function updateCounter() {
+                slideCounter.textContent = `${currentSlide + 1} / ${slides.length}`;
+            }
+
+            function updateNavButtons() {
+                prevBtn.style.display = currentSlide === 0 ? 'none' : 'block';
+                nextBtn.style.display = currentSlide === slides.length - 1 ? 'none' : 'block';
+            }
+
+            function next() {
+                if (currentSlide < slides.length - 1) {
+                    showSlide(currentSlide + 1);
+                }
+            }
+
+            function prev() {
+                if (currentSlide > 0) {
+                    showSlide(currentSlide - 1);
+                }
+            }
+            
+            // Event Listeners para botões e teclado
+            nextBtn.addEventListener('click', next);
+            prevBtn.addEventListener('click', prev);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') { 
+                    next();
+                } else if (e.key === 'ArrowLeft') {
+                    prev();
+                }
+            });
+            
+            // Inicia a apresentação
+            showSlide(0);
+        });
+    </script>
+</body>
+</html>

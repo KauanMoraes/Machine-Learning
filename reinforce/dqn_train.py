@@ -3,7 +3,7 @@ import random
 import re
 from collections import deque
 
-import ale_py
+# import ale_py
 import gymnasium as gym
 import numpy as np
 import torch
@@ -54,7 +54,7 @@ class TrainDQN(Base):
             self.output_folder = f"agents/{hparams['game'].replace('/', '_')}/dqn_agent/{get_time_as_str()}"
         os.makedirs(f"{self.output_folder}/checkpoints", exist_ok=True)
         self.writer = SummaryWriter(self.output_folder + "/tensorboard")
-        gym.register_envs(ale_py)
+        # gym.register_envs(ale_py)
         
         # ADICIONADO: Hiperparâmetros específicos do DQN
         self.batch_size = hparams["batch_size"]
